@@ -931,7 +931,7 @@ let menuCam=0,T=0;
 function render(){
  ctx.setTransform(dpr*scale,0,0,dpr*scale,dpr*offX,0);
  const inGame=L&&state!=='menu'&&state!=='chars'&&state!=='how';
- const th=inGame?curTheme():THEMES[Math.floor(T/8)%4];
+ const th=(inGame?curTheme():THEMES[Math.floor(Math.max(0,T)/8)%4])||THEMES[0];
  const camY=inGame?cam.y:menuCam;
  const lx=-offX/scale,lw=innerWidth/scale;
  drawBackground(th,camY,lx,lw,T);
@@ -957,14 +957,14 @@ function drawPreview(canvas,ch,t,st){
 // ================= ЦИКЛ =================
 let last=performance.now(),acc=0;
 function frame(now){
- const dt=Math.min(.05,(now-last)/1000);last=now;T+=dt;
+ requestAnimationFrame(frame);
+ const dt=clamp((now-last)/1000,0,.05);last=now;T+=dt;
  if(state==='play'){acc+=dt;while(acc>=STEP){update(STEP);acc-=STEP;}}
  else{acc=0;if(state==='result'&&L){for(const q of parts){q.x+=q.vx*dt;q.y+=q.vy*dt;q.vy+=q.g*dt;q.life-=dt;}parts=parts.filter(q=>q.life>0);}}
  if(state==='menu'||state==='chars'||state==='how')menuCam-=dt*40;
  render();
  if(state==='menu')drawPreview($('heroCv'),getChar(save.sel),T,Math.floor(T/3)%2?'run':'jump');
  if(state==='chars')document.querySelectorAll('#charGrid canvas').forEach(c=>drawPreview(c,getChar(c.dataset.id),T,'run'));
- requestAnimationFrame(frame);
 }
 
 // ================= МЕНЮ =================
